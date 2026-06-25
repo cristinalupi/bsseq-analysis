@@ -2,6 +2,15 @@
 set -euo pipefail
 
 # Usage: bash scripts/run_fastqc.sh <input_fastq_directory> [threads]
+#
+# This script runs FastQC on FASTQ files in a given directory.
+# It generates quality control reports for each FASTQ file.
+#
+# Output:
+#   - HTML and .zip FastQC reports are saved in:
+#     <input_fastq_directory>/fastqc_reports/
+#
+# This step can be applied to both raw and processed FASTQ files.
 
 # Check arguments
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
