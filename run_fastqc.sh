@@ -1,7 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-# Usage: bash scripts/fastqc.sh <input_fastq_directory> [threads]
+# Usage: bash scripts/run_fastqc.sh <input_fastq_directory> [threads]
+
+# Load conda 
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate bsseq
 
