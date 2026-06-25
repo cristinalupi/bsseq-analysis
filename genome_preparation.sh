@@ -1,8 +1,28 @@
 #!/bin/bash
 set -euo pipefail
-source "$(conda info --base)/etc/profile.d/conda.sh"
 
 # Usage: bash scripts/genome_preparation.sh <path/to/genome.fa|genome.fasta>
+#
+# This script prepares a reference genome for bisulfite analysis by:
+#   - generating chrom.sizes for the original genome
+#   - downloading and adding lambda phage sequence as a new chromosome
+#   - generating chrom.sizes for lambda
+#   - creating a combined genome (genome + lambda)
+#   - building a Bismark index
+#
+# Outputs are generated in the same directory as the input genome.
+#
+# This step only needs to be executed once per genome.
+
+# Check arguments
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <path/to/genome.fa|genome.fasta>"
+    exit 1
+fi
+
+# Load conda
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate bsseq
 
 GENOME_PATH="$1"
 
@@ -21,9 +41,6 @@ BISMARK_DIR="$DIR/bismark_index_${GENOME_NAME}_lambda"
 
 # Check genome exists
 [ -f "$GENOME_PATH" ] || { echo "Genome file not found: $GENOME_PATH"; exit 1; }
-
-# Conda activation
-conda activate bsseq
 
 # Generate chrom.sizes for original genome
 samtools faidx "$GENOME_PATH"
@@ -47,8 +64,8 @@ echo "Genome with lambda added saved to: $OUTPUT"
 # Create directory for Bismark index
 mkdir -p "$BISMARK_DIR"
 
-# Copy genome into index directory (Bismark requirement)
-cp "$OUTPUT" "$BISMARK_DIR"
+# Link genome into index directory (Bismark requirement)
+ln -sf "$OUTPUT" "$BISMARK_DIR"
 
 # Build Bismark index
 bismark_genome_preparation "$BISMARK_DIR"
