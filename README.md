@@ -57,11 +57,13 @@ The pipeline can be executed in two ways:
 ```bash
 bash run_pipeline.sh input_fastq_directory input_genome_directory/genome.fa BS-Seq 16
 ```
-####Arguments:
-`input_fastq_directory`: directory containing FASTQ files
-`genome.fa`: reference genome
-`library_type`: sequencing library type
-`threads` (optional): number of threads (default: 16)
+###Arguments:
+
+- `input_fastq_directory`: directory containing FASTQ files
+- `genome.fa`: reference genome
+- `library_type`: sequencing library type
+- `threads` (optional): number of threads (default: 16)
+
 Supported library types:
 - BS-Seq
 - RRBS
