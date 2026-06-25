@@ -2,6 +2,24 @@
 set -euo pipefail
 
 # Usage: bash scripts/bismark_fastq_prep.sh <input_fastq_directory> <library_type> [threads]
+#
+# This script prepares FASTQ files for Bismark alignment by applying
+# library-specific hard trimming using fastp.
+#
+# Behaviour:
+#   - Reads input FASTQs from: <input_fastq_directory>/trimmed_fastq/
+#   - Outputs processed FASTQs to: <input_fastq_directory>/bismark_input_fastq/
+#   - Applies trimming parameters depending on library type
+#   - For BS-Seq, no trimming is performed (symbolic links are created)
+#
+# Supported library types:
+#   BS-Seq, RRBS, PBAT, scBS-Seq, TruSeq, Accel-NGS, Zymo, EM-seq
+
+# Check arguments
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+    echo "Usage: $0 <input_fastq_directory> <library_type> [threads]"
+    exit 1
+fi
 
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate bsseq
@@ -14,7 +32,6 @@ THREADS="${3:-4}"
 TRIMMED_DIR="${INPUT_DIR}/trimmed_fastq"
 OUTPUT_DIR="${INPUT_DIR}/bismark_input_fastq"
 
-# Create output directory
 mkdir -p "$OUTPUT_DIR"
 
 # Initialize trimming parameters
@@ -81,6 +98,8 @@ case "$LIBRARY_TYPE" in
 esac
 
 # Loop through paired FASTQ files
+shopt -s nullglob
+
 for R1 in "$TRIMMED_DIR"/*_R1.trimmed.fastq.gz; do
 
     base=$(basename "$R1" "_R1.trimmed.fastq.gz")
@@ -88,6 +107,8 @@ for R1 in "$TRIMMED_DIR"/*_R1.trimmed.fastq.gz; do
 
     OUT_R1="${OUTPUT_DIR}/${base}_R1.fastq.gz"
     OUT_R2="${OUTPUT_DIR}/${base}_R2.fastq.gz"
+
+    [ -f "$R2" ] || { echo "Missing pair for $R1"; exit 1; }
 
     # BS-Seq: no hard trimming (create symbolic links)
     if [ "$LIBRARY_TYPE" = "BS-Seq" ]; then
@@ -106,4 +127,4 @@ for R1 in "$TRIMMED_DIR"/*_R1.trimmed.fastq.gz; do
         --thread "$THREADS"
 
 done
-``
+
