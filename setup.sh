@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Usage: bash scripts/setup_environment.sh
+
+# This script installs Miniconda (if not present) and creates
+# the bsseq conda environment required for the pipeline.
+# This step only needs to be executed once per system.
+
 # This script is intended for Linux systems only.
 # Tested on Ubuntu-based environments.
 # It installs Miniconda locally in $HOME and creates the bsseq environment.
