@@ -13,20 +13,25 @@ if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
     exit 1
 fi
 
+# Load conda
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate bsseq
 
 INPUT_DIR="$1"
 THREADS="${2:-8}"
 
-OUTPUT_DIR="trimmed_fastq"
+OUTPUT_DIR="${INPUT_DIR}/trimmed_fastq"
 
 mkdir -p "$OUTPUT_DIR"
+
+shopt -s nullglob
 
 for R1 in "${INPUT_DIR}"/*_R1.fastq.gz
 do
     R2="${R1/_R1.fastq.gz/_R2.fastq.gz}"
     SAMPLE=$(basename "$R1" _R1.fastq.gz)
+
+    [ -f "$R2" ] || { echo "Missing pair for $R1"; exit 1; }
 
     fastp \
         -i "$R1" -I "$R2" \
@@ -41,6 +46,7 @@ do
         --thread "$THREADS" \
         --html "${OUTPUT_DIR}/${SAMPLE}_fastp.html"
 done
+
 
 # Run FastQC on trimmed reads
 bash scripts/run_fastqc.sh "$OUTPUT_DIR"
