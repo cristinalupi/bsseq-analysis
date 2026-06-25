@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # Usage: bash scripts/fastqc.sh <input_fastq_directory> [threads]
-
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate bsseq
 INPUT_DIR="$1"
 THREADS="${2:-4}"
 
