@@ -1,254 +1,148 @@
 # BS-seq Methylation Analysis Pipeline
 
 This repository provides a reproducible and modular pipeline for DNA methylation analysis using bisulfite sequencing (BS-seq) data.
-
 The workflow processes raw sequencing reads from FASTQ files through alignment, filtering and methylation extraction, generating outputs suitable for downstream analysis and visualization.
 
-## Setup
-Clone the repository:
-
+---
+## Installation
+### Clone the repository
 ```bash
 git clone https://github.com/your-org/bsseq-analysis.git
 cd bsseq-analysis
 ```
-
-Install all required dependencies:
+### Setup the environment
 ```bash
-bash scripts/setup.sh
+bash scripts/setup_environment.sh
 ```
-Activate the environment:
+What it does:
+- Installs Miniconda locally (if not already installed)
+- Creates a Conda environment named bsseq
+- Installs all required tools:
+  - fastp
+  - FastQC
+  - Bismark
+  - Bowtie2
+  - Samtools
+  - Sambamba
+  - MethylDackel
+  - Bedtools
+  - UCSC utilities (bedGraphToBigWig)
+This step only needs to be executed once per system.
+
+### Input requirements
+FASTQ files:
+- Paired-end reads
+- Compressed format: `.fastq.gz`
+- Naming convention:
+Reference genome:
+- FASTA format (`.fa` or `.fasta`)
+
+### Expected directory structure
+Before running the pipeline, your project should look like this:
+```
+bsseq-analysis/
+├── input_fastq_directory/
+│   ├── sample1_R1.fastq.gz
+│   ├── sample1_R2.fastq.gz
+│   ├── sample2_R1.fastq.gz
+│   └── sample2_R2.fastq.gz
+└── input_genome_directory/
+    └── genome.fa
+```
+---
+## Pipeline usage
+The pipeline can be executed in two ways:
+---
+### Full pipeline 
 ```bash
-conda activate bsseq
+bash run_pipeline.sh input_fastq_directory input_genome_directory/genome.fa BS-Seq 16
 ```
+####Arguments:
+`input_fastq_directory`: directory containing FASTQ files
+`genome.fa`: reference genome
+`library_type`: sequencing library type
+`threads` (optional): number of threads (default: 16)
+Supported library types:
+- BS-Seq
+- RRBS
+- PBAT
+- scBS-Seq
+- TruSeq
+- Accel-NGS
+- Zymo
+- EM-seq
 
-## Read preprocessing
-
-### Input data
-
-The pipeline expects raw bisulfite sequencing reads in FASTQ format.
-
-- Files must be compressed (`.fastq.gz`)
-- Paired-end reads are supported
-- File naming must follow the pattern: `sample_name_R1.fastq.gz sample_name_R2.fastq.gz`
-- FASTQ files must be in the same directory: `input_fastq_directory` (path to the directory containing raw FASTQ files `.fastq.gz`)
-
-
-#### Input directory:
-```
-besseq-analysis
-  └── input_fastq_directory/
-  |   ├── sample1_R1.fastq.gz
-  |   ├── sample1_R2.fastq.gz
-  |   ├── sample2_R1.fastq.gz
-  |   └── sample2_R2.fastq.gz
-  └── input_genome_directory/
-      └── genome.fa
-```
-
-### FastQC quality control
-This pipeline uses FastQC for quality control of raw sequencing data.
-More info: 
-https://github.com/s-andrews/fastqc
-#### Arguments
-`input_fastq_directory`: path to the directory containing raw FASTQ files (`.fastq.gz`)
+### Step-by-step execution
+Each script can be executed independently:
+1. Genome preparation
 ```bash
-bash scripts/run_fastqc.sh input_fastq_directory
-```
-
-#### Output
-Quality control reports are generated in: `input_fastq_directory/fastqc_reports/`
-
-#### Output directory after FastQC:
-```
-besseq-analysis
-  └── input_fastq_directory/
-  |   ├── sample1_R1.fastq.gz
-  |   ├── sample1_R2.fastq.gz
-  |   ├── sample2_R1.fastq.gz
-  |   └── sample2_R2.fastq.gz
-  └── fastqc_reports/
-  |  ├── sample1_R1_fastqc.html
-  |  ├── sample1_R2_fastqc.html
-  |  ├── sample2_R1_fastqc.html
-  |  └── sample2_R2_fastqc.html
-  └── input_genome_directory/
-      └── genome.fa
-```
-### Trimming and adapter removal (fastp)
-This step performs read trimming, adapter removal and quality filtering using `fastp`.
-More info: 
-https://github.com/opengene/fastp
-
-#### Arguments
-- `input_fastq_directory`: path to the directory containing raw FASTQ files (`.fastq.gz`)
-- `threads` (optional): number of threads to use (default: 8)
-
-#### Run fastp
-
-```bash
-bash scripts/run_fastp.sh input_fastq_directory
-```
-
-#### Output directory after fastp:
-```
-besseq-analysis
-  └── input_fastq_directory/
-  |   ├── sample1_R1.fastq.gz
-  |   ├── sample1_R2.fastq.gz
-  |   ├── sample2_R1.fastq.gz
-  |   └── sample2_R2.fastq.gz
-  ├── fastqc_reports/
-  |  ├── sample1_R1_fastqc.html
-  |  ├── sample1_R2_fastqc.html
-  |  ├── sample2_R1_fastqc.html
-  |  ├── sample2_R2_fastqc.html
-  |  └── trimmed_fastq/
-  |      ├── sample1_R1.trimmed.fastq.gz
-  |      ├── sample1_R2.trimmed.fastq.gz
-  |      ├── sample2_R1.trimmed.fastq.gz
-  |      ├── sample2_R2.trimmed.fastq.gz
-  |      ├── sample1_fastp.html
-  |      ├── sample2_fastp.html
-  |      └── fastqc_reports/
-  |          ├── sample1_R1.trimmed_fastqc.html
-  |          ├── sample1_R2.trimmed_fastqc.html
-  |          ├── sample2_R1.trimmed_fastqc.html
-  |          └── sample2_R2.trimmed_fastqc.html
-  └── input_genome_directory/
-      └── genome.fa
-```
-
-## Alignment (Bismark)
-This step aligns bisulfite-treated reads to a reference genome using Bismark.
-More info:
-https://www.bioinformatics.babraham.ac.uk/projects/bismark/
-### Genome preparation
-```
 bash scripts/genome_preparation.sh input_genome_directory/genome.fa
 ```
-#### Output directory after genome_preparation.sh:
+What it does:
+- Adds lambda phage as spike-in control
+- Generates combined genome (genome + lambda)
+- Creates chrom.sizes files
+- Builds Bismark index
+2. FASTQ trimming
+```bash
+bash scripts/fastq_trimming.sh input_fastq_directory 8
 ```
-besseq-analysis
-├── input_fastq_directory/
-│   ├── sample1_R1.fastq.gz
-│   ├── sample1_R2.fastq.gz
-│   ├── sample2_R1.fastq.gz
-│   ├── sample2_R2.fastq.gz
-│   ├── fastqc_reports/
-│   |  ├── sample1_R1_fastqc.html
-│   |  ├── sample1_R2_fastqc.html
-│   |  ├── sample2_R1_fastqc.html
-│   |  └── sample2_R2_fastqc.html
-│   └── trimmed_fastq/
-│       ├── sample1_R1.trimmed.fastq.gz
-│       ├── sample1_R2.trimmed.fastq.gz
-│       ├── sample2_R1.trimmed.fastq.gz
-│       ├── sample2_R2.trimmed.fastq.gz
-│       ├── sample1_fastp.html
-│       ├── sample2_fastp.html
-│       └── fastqc_reports/
-│           ├── sample1_R1.trimmed_fastqc.html
-│           ├── sample1_R2.trimmed_fastqc.html
-│           ├── sample2_R1.trimmed_fastqc.html
-│           └── sample2_R2.trimmed_fastqc.html
-└── input_genome_directory/
-    ├── genome.fa
-    ├── genome.chrom.sizes
-    ├── lambda.chrom.sizes
-    ├── genome_lambda.fa
-    └── bismark_index_genome_lambda/
-        └── Bisulfite_Genome/
-```
-### Pre-alignment trimming and parameters selection
-https://felixkrueger.github.io/Bismark/
-#### Check if any requirements in from lybrary types: 
-https://felixkrueger.github.io/Bismark/usage/library-types/
+What it does:
+- Removes adapters and low-quality bases
+- Trims reads based on quality
+- Filters short reads
+- Generates QC reports (fastp + FastQC)
 
+3. FASTQ preparation for Bismark
+```bash
+bash scripts/bismark_fastq_prep.sh input_fastq_directory BS-Seq
 ```
-bash scripts/fastq_trimming.sh input_fastq_directory BS-Seq
-```
-```
-besseq-analysis
-├── input_fastq_directory/
-│   ├── sample1_R1.fastq.gz
-│   ├── sample1_R2.fastq.gz
-│   ├── sample2_R1.fastq.gz
-│   ├── sample2_R2.fastq.gz
-│   ├── fastqc_reports/
-│   │   ├── sample1_R1_fastqc.html
-│   │   ├── sample1_R2_fastqc.html
-│   │   ├── sample2_R1_fastqc.html
-│   │   └── sample2_R2_fastqc.html
-│   └── trimmed_fastq/
-│       ├── sample1_R1.trimmed.fastq.gz
-│       ├── sample1_R2.trimmed.fastq.gz
-│       ├── sample2_R1.trimmed.fastq.gz
-│       ├── sample2_R2.trimmed.fastq.gz
-│       ├── sample1_fastp.html
-│       ├── sample2_fastp.html
-│       ├── fastqc_reports/
-│       │   ├── sample1_R1.trimmed_fastqc.html
-│       │   ├── sample1_R2.trimmed_fastqc.html
-│       │   ├── sample2_R1.trimmed_fastqc.html
-│       │   └── sample2_R2.trimmed_fastqc.html
-│       └── bismark_input_fastq/
-│           ├── sample1_R1.fastq.gz
-│           ├── sample1_R2.fastq.gz
-│           ├── sample2_R1.fastq.gz
-│           └── sample2_R2.fastq.gz
-│
-└── input_genome_directory/
-    ├── genome.fa
-    ├── genome.chrom.sizes
-    ├── lambda.chrom.sizes
-    ├── genome_lambda.fa
-    └── bismark_index_genome_lambda/
-        └── Bisulfite_Genome/
-```
+What it does:
+- Applies library-specific trimming
+- Adjusts reads depending on library type
+- Generates input FASTQ files for alignment
 
+4. Alignment
+```bash
+bash scripts/bismark_alignment.sh input_fastq_directory BS-Seq 16
 ```
-bash scripts/bismark_alignment.sh input_fastq_directory BS-Seq
-```
+What it does:
+- Aligns reads using Bismark
+- Uses Bowtie2 backend
+- Applies library-specific parameters
+- Generates BAM files and reports
 
+5. BAM processing
+```bash
+bash scripts/bam_processing.sh 16
 ```
-besseq-analysis
-├── input_fastq_directory/
-│   ├── sample1_R1.fastq.gz
-│   ├── sample1_R2.fastq.gz
-│   ├── sample2_R1.fastq.gz
-│   ├── sample2_R2.fastq.gz
-│   ├── fastqc_reports/
-│   │   ├── sample1_R1_fastqc.html
-│   │   ├── sample1_R2_fastqc.html
-│   │   ├── sample2_R1_fastqc.html
-│   │   └── sample2_R2_fastqc.html
-│   └── trimmed_fastq/
-│   |   ├── sample1_R1.trimmed.fastq.gz
-│   |   ├── sample1_R2.trimmed.fastq.gz
-│   |   ├── sample2_R1.trimmed.fastq.gz
-│   |   ├── sample2_R2.trimmed.fastq.gz
-│   |   ├── sample1_fastp.html
-│   |   └── sample2_fastp.html
-│   |        ├── fastqc_reports/
-│   |        │   ├── sample1_R1.trimmed_fastqc.html
-│   |        │   ├── sample1_R2.trimmed_fastqc.html
-│   |        │   ├── sample2_R1.trimmed_fastqc.html
-│   |        │   └── sample2_R2.trimmed_fastqc.html
-│   |        └── bismark_input_fastq/
-│   |            ├── sample1_R1.fastq.gz
-│   |            ├── sample1_R2.fastq.gz
-│   |            ├── sample2_R1.fastq.gz
-│   |            └── sample2_R2.fastq.gz
+What it does:
+- Sorts BAM files
+- Removes duplicate reads
+- Filters low-quality and unwanted reads
+- Produces final processed BAM files
+
+6. Methylation analysis
+```bash
+bash scripts/methylation_analysis.sh 16
+```
+What it does:
+- Detects and corrects M-bias
+- Extracts CpG methylation (MethylDackel)
+- Computes lambda methylation (conversion efficiency)
+- Generates BEDGRAPH files
+- Produces DSS input tables
+- Generates BigWig tracks for visualization
+## Output
+All results are stored in: `methylation_output/`
+### Output structure
+```
+methylation_output/
 ├── bismark_alignment/
-|   ├── sample1_bismark_bt2.bam
-│   ├── sample2_bismark_bt2.bam
-│   ├── sample1_bismark_bt2_PE_report.txt
-│   └── sample2_bismark_bt2_PE_report.txt
-└── input_genome_directory/
-    ├── genome.fa
-    ├── genome.chrom.sizes
-    ├── lambda.chrom.sizes
-    ├── genome_lambda.fa
-    └── bismark_index_genome_lambda/
-        └── Bisulfite_Genome/
+├── deduplicated/
+├── mbias/
+├── methylation/
+├── DSS/
+├── lambda_stats/
+└── bigwig/
 ```
