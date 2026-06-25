@@ -7,6 +7,9 @@ if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
     exit 1
 fi
 
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate bsseq
+
 INPUT_DIR=$1
 THREADS=${2:-8}
 
