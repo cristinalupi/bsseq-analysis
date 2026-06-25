@@ -1,17 +1,16 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <input_fastq_directory> [threads]"
-    exit 1
-fi
+# Usage: bash scripts/fastqc.sh <input_fastq_directory> [threads]
 
-INPUT_DIR=$1
-THREADS=${2:-4}
+INPUT_DIR="$1"
+THREADS="${2:-4}"
 
+# Paths
 OUTPUT_DIR="${INPUT_DIR}/fastqc_reports"
 
-mkdir -p $OUTPUT_DIR
+# Create output directory
+mkdir -p "$OUTPUT_DIR"
 
-fastqc ${INPUT_DIR}/*.fastq.gz -o $OUTPUT_DIR -t $THREADS
-
+# Run FastQC
+fastqc "${INPUT_DIR}"/*.fastq.gz -o "$OUTPUT_DIR" -t "$THREADS"
