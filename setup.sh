@@ -23,18 +23,17 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 if ! conda env list | grep -q "^bsseq "
 then
     conda create -n bsseq -y \
-        -c conda-forge \
-        -c bioconda \
-        python=3.10 \
-        fastp \
-        bismark \
-        bowtie2 \
-        samtools \
-        sambamba \
-        methyldackel \
-        bedtools \
-        ucsc-bedgraphtobigwig \
-        r-base=4.2
+    -c conda-forge \
+    -c bioconda \
+    python=3.10.20 \
+    fastp=1.3.5 \
+    bismark=0.25.1 \
+    bowtie2=2.5.5 \
+    samtools=1.23.1 \
+    sambamba=1.0.1 \
+    methyldackel=0.6.1 \
+    bedtools=2.31.1 \
+    ucsc-bedgraphtobigwig=482
 fi
 conda activate bsseq
 
