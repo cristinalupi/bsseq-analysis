@@ -112,8 +112,8 @@ for R1 in "$TRIMMED_DIR"/*_R1.trimmed.fastq.gz; do
 
     # BS-Seq: no hard trimming (create symbolic links)
     if [ "$LIBRARY_TYPE" = "BS-Seq" ]; then
-        ln -sf "$R1" "$OUT_R1"
-        ln -sf "$R2" "$OUT_R2"
+        ln -sf "$(realpath "$R1")" "$OUT_R1"
+        ln -sf "$(realpath "$R2")" "$OUT_R2"
         continue
     fi
 
