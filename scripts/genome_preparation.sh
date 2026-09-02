@@ -65,7 +65,7 @@ echo "Genome with lambda added saved to: $OUTPUT"
 mkdir -p "$BISMARK_DIR"
 
 # Link genome into index directory (Bismark requirement)
-ln -sf "$OUTPUT" "$BISMARK_DIR"
+ln -sf "$(realpath "$OUTPUT")" "$BISMARK_DIR/"
 
 # Build Bismark index
 bismark_genome_preparation "$BISMARK_DIR"
