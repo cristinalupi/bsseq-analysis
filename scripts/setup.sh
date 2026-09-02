@@ -33,6 +33,7 @@ then
     -c bioconda \
     python=3.10.20 \
     fastp=1.3.5 \
+    fasqc=0.11.8 \
     bismark=0.25.1 \
     bowtie2=2.5.5 \
     samtools=1.23.1 \
