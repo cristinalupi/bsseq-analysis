@@ -87,7 +87,7 @@ What it does:
 - Builds Bismark index
 2. FASTQ trimming
 ```bash
-bash scripts/fastq_trimming.sh input_fastq_directory 8
+bash scripts/run_fastp.sh input_fastq_directory 8
 ```
 What it does:
 - Removes adapters and low-quality bases
