@@ -150,7 +150,7 @@ generate_dss() {
         chr=$1
         pos=int(($2+$3)/2)
         N=$5+$6
-        X=$6
+        X=$5
         print chr,pos,N,X
     }' "$filtered" > "${DSS_DIR}/${sample}.DSS.txt"
 }
